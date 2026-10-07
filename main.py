@@ -51,15 +51,16 @@ def get_todo(todo_id: int):
 def post_todo(todo: TodoCreate):
     global next_id
 
-    todos.append({
+    new_todo = {
         "id": next_id,
         "task": todo.task,
         "completed": False
-    })
+    }
 
+    todos.append(new_todo)
     next_id += 1
 
-    return {"message": todo}
+    return new_todo
 
 @app.put("/todo/{todo_id}")
 def update_todo(todo_id: int, todo: TodoUpdate):
