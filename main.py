@@ -1,45 +1,83 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
+
 
 app = FastAPI(title="Karya")
 
-todos = ["Fastapi","LangChain","LangGraph","n8n"]
+todos = [
+    {"id": 1, "task": "FastAPI", "completed": False},
+    {"id": 2, "task": "LangChain", "completed": True},
+    {"id": 3, "task": "LangGraph", "completed": True},
+    {"id": 4, "task": "n8n", "completed": True}
+]
+
+next_id = 5
+
+
+class TodoCreate(BaseModel):
+    task: str
+
+
+class TodoReturn(BaseModel):
+    id: int
+    task: str
+    completed: bool
+
+class TodoUpdate(BaseModel):
+    task: str
+    completed: bool
+
 
 @app.get("/")
 def home():
     return {"message": "Welcome to Karya"}
 
 
-@app.get("/todos")
+@app.get("/todos", response_model=list[TodoReturn])
 def get_todos():
     return todos
 
 
-@app.get("/todo/{todo_id}")
+@app.get("/todo/{todo_id}", response_model=TodoReturn)
 def get_todo(todo_id: int):
+    for todo in todos:
+        if todo["id"] == todo_id:
+            return todo
 
-    if 0 <= todo_id < len(todos):
-            return {"Message":todos[todo_id]}
-
-    return {"message":"Task not found"}
+    return {"message": "Task not found"}
 
 
-@app.post("/todo")
-def post_todo(todo: str):
+@app.post("/todo", response_model=TodoReturn)
+def post_todo(todo: TodoCreate):
+    global next_id
 
-    if todo:
-        todos.append(todo)
+    todos.append({
+        "id": next_id,
+        "task": todo.task,
+        "completed": False
+    })
 
-        return {"message":'todo added'}
+    next_id += 1
 
-    return {"message":'first add todo'}
+    return {"message": todo}
+
+@app.put("/todo/{todo_id}")
+def update_todo(todo_id: int, todo: TodoUpdate):
+    for item in todos:
+        if item["id"] == todo_id:
+            item["task"] = todo.task
+            item["completed"] = todo.completed
+
+            return {"message": "Todo updated", "todo": item}
+
+    return {"message": "Todo not found"}
 
 
 @app.delete("/todo/{todo_id}")
 def del_todo(todo_id: int):
+    for todo in todos:
+        if todo["id"] == todo_id:
+            todos.remove(todo)
+            return {"message": f'{todo["task"]} removed!'}
 
-    if 0 <= todo_id < len(todos):
-        todo = todos.pop(todo_id)
-
-        return {"message": f'{todo} removed!'}
-
-    return {"message": 'Todo not present'}
+    return {"message": "Todo not present"}
