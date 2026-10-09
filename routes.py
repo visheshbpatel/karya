@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from schemas import TodoCreate, TodoUpdate, TodoReturn
+from schemas import TodoCreate, TodoUpdate, TodoReturn, TodoPatch
 from database import get_db, Todo
 
 
@@ -31,7 +31,7 @@ def get_todo(todo_id: int, db: Session = Depends(get_db)):
     return todo
 
 
-@router.post("/todo", response_model=TodoReturn)
+@router.post("/todo", response_model=TodoReturn, status_code=201)
 def post_todo(todo: TodoCreate, db: Session = Depends(get_db)):
 
     new_todo = Todo (
@@ -46,7 +46,7 @@ def post_todo(todo: TodoCreate, db: Session = Depends(get_db)):
     return new_todo
     
 
-@router.put("/todo/{todo_id}")
+@router.put("/todo/{todo_id}", response_model=TodoReturn)
 def update_todo(todo_id: int, todo_data: TodoUpdate, db: Session = Depends(get_db)):
 
 
@@ -65,10 +65,10 @@ def update_todo(todo_id: int, todo_data: TodoUpdate, db: Session = Depends(get_d
     db.commit()
     db.refresh(todo)
 
-    return {"message": "Todo updated", "todo": todo}
+    return todo
 
 
-@router.delete("/todo/{todo_id}")
+@router.delete("/todo/{todo_id}", status_code=204)
 def del_todo(todo_id: int, db: Session = Depends(get_db)):
 
 
@@ -84,5 +84,24 @@ def del_todo(todo_id: int, db: Session = Depends(get_db)):
     db.delete(todo)
     db.commit()
 
-    return {"message": f'Task {todo.task} removed!'}
 
+@router.patch("/todo/{todo_id}", response_model=TodoReturn)
+def patch_todo(todo_id:int, todo_data: TodoPatch, db: Session = Depends(get_db)):
+    result = db.execute(
+        select(Todo).where(Todo.id == todo_id)
+    )
+
+    todo = result.scalar_one_or_none()
+
+    if todo is None:
+        raise HTTPException(status_code=404, detail="Todo not found")
+
+    update_data = todo_data.model_dump(exclude_unset=True)
+
+    for field, value in update_data.items():
+        setattr(todo, field, value)
+
+    db.commit()
+    db.refresh(todo)
+
+    return todo

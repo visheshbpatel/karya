@@ -14,6 +14,12 @@ class TodoReturn(BaseModel):
         "from_attributes":True
     }
 
+
 class TodoUpdate(BaseModel):
     task: str
     completed: bool
+
+
+class TodoPatch(BaseModel):
+    task: str | None = None
+    completed: bool | None = None
