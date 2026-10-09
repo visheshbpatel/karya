@@ -16,3 +16,7 @@ env/
 # IDE
 .vscode/
 .idea/
+
+
+# database
+karya.db
