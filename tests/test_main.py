@@ -1,7 +1,4 @@
-from fastapi.testclient import TestClient
-from main import app
-
-client = TestClient(app)
+# tests for karya 
 
 def test_home(client):
     response = client.get("/")
@@ -93,10 +90,9 @@ def test_todo_put(client):
     assert response.status_code == 200
 
     data = response.json()
-    assert data['id'] == 1
+    assert data['id'] == todo_id
     assert data['task'] == "learn pytest"
     assert data['completed'] is True
-
 
 
 def test_todo_patch(client):
@@ -118,7 +114,7 @@ def test_todo_patch(client):
     assert response.status_code == 200
 
     data = response.json()
-    assert data['id'] == 1
+    assert data['id'] == todo_id
     assert data['task'] == "learn pytest"
     assert data['completed'] is True
 
@@ -140,7 +136,6 @@ def test_todo_delete(client):
 
     response = client.get(f"/todo/{todo_id}")
     assert response.status_code == 404
-
 
 
 def test_get_nonexistent_todo(client):
