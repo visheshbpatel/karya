@@ -34,11 +34,11 @@ def get_todo(todo_id: int, db: Session = Depends(get_db)):
 @router.post("/todo", response_model=TodoReturn, status_code=201)
 def post_todo(todo: TodoCreate, db: Session = Depends(get_db)):
 
-    new_todo = Todo (
-                task = todo.task,
-                completed= False,
-                priority= todo.priority
-            )
+    new_todo = Todo(
+        task = todo.task,
+        completed= False,
+        priority= todo.priority
+    )
 
     db.add(new_todo)
     db.commit()

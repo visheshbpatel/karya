@@ -11,6 +11,8 @@ The project starts as a lightweight Todo application and is being built with a f
 - Update tasks
 - Delete tasks
 - Mark tasks as completed
+- Set task priority
+- Partially update tasks
 
 ## Tech Stack
 

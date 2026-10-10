@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, Boolean, String, create_engine, select
+from sqlalchemy import Integer, Boolean, String, create_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 
 
