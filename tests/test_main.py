@@ -169,3 +169,40 @@ def test_delete_nonexistent_todo(client):
     response = client.delete("/todo/999")
 
     assert response.status_code == 404
+
+
+def test_create_todo_default_priority(client):
+    response = client.post(
+        "/todo",
+        json={"task": "Study migrations"},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["priority"] == 0
+
+
+def test_create_todo_custom_priority(client):
+    response = client.post(
+        "/todo",
+        json={"task": "Finish Karya", "priority": 2},
+    )
+
+    assert response.status_code == 201
+    assert response.json()["priority"] == 2
+
+
+def test_patch_todo_priority(client):
+    create_response = client.post(
+        "/todo",
+        json={"task": "Study migrations"},
+    )
+    todo_id = create_response.json()["id"]
+
+    response = client.patch(
+        f"/todo/{todo_id}",
+        json={"priority": 2},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["priority"] == 2
+    assert response.json()["task"] == "Study migrations"

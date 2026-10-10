@@ -18,9 +18,7 @@ class Todo(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     task: Mapped[str] = mapped_column(String)
     completed: Mapped[bool] = mapped_column(Boolean, default=False)
-
-Base.metadata.create_all(engine)
-
+    priority: Mapped[int] = mapped_column(Integer, default=0, server_default="0", nullable=False,)
 
 def get_db():
     db = SessionLocal()

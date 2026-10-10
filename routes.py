@@ -36,7 +36,8 @@ def post_todo(todo: TodoCreate, db: Session = Depends(get_db)):
 
     new_todo = Todo (
                 task = todo.task,
-                completed= False
+                completed= False,
+                priority= todo.priority
             )
 
     db.add(new_todo)
@@ -61,6 +62,7 @@ def update_todo(todo_id: int, todo_data: TodoUpdate, db: Session = Depends(get_d
 
     todo.task = todo_data.task
     todo.completed = todo_data.completed
+    todo.priority = todo_data.priority
 
     db.commit()
     db.refresh(todo)
