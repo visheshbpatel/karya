@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from schemas import TodoCreate, TodoUpdate, TodoReturn, TodoPatch
@@ -14,6 +14,9 @@ def get_todos(
     priority: int | None = None,
     sort_by: str = "id",
     order: str = "asc",
+    search: str | None = None,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=10, ge=1),
     db: Session = Depends(get_db)
 ):
 
@@ -31,11 +34,16 @@ def get_todos(
     if order not in {"asc", "desc"}:
         raise HTTPException(status_code=400, detail="Invalid sort field")
 
+    if search is not None:
+        query = query.where(Todo.task.ilike(f"%{search}%"))
+
     sort_column = getattr(Todo, sort_by)
 
     query = query.order_by(
         sort_column.asc() if order == "asc" else sort_column.desc()
     )
+
+    query = query.offset(skip).limit(limit)
 
     result = db.execute(query)
     todos = result.scalars().all()

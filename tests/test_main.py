@@ -294,3 +294,76 @@ def test_invalid_sort_parameters(client):
 
     response = client.get("/todos?order=invalid")
     assert response.status_code == 400
+
+
+def test_search_todos(client):
+    client.post("/todo", json={"task": "Learn Python"})
+    client.post("/todo", json={"task": "Learn FastAPI"})
+    client.post("/todo", json={"task": "Practice Python DSA"})
+
+    response = client.get("/todos?search=Python")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
+    assert all("Python" in todo["task"] for todo in data)
+
+
+def test_search_todos_no_match(client):
+    client.post("/todo", json={"task": "Learn Python"})
+
+    response = client.get("/todos?search=Java")
+
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_search_with_completed_filter(client):
+    client.post("/todo", json={"task": "Learn Python"})
+    create_response = client.post(
+        "/todo",
+        json={"task": "Practice Python"},
+    )
+    todo_id = create_response.json()["id"]
+
+    client.patch(
+        f"/todo/{todo_id}",
+        json={"completed": True},
+    )
+
+    response = client.get("/todos?search=Python&completed=true")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["task"] == "Practice Python"
+
+
+def test_todos_limit(client):
+    for task in ["Task A", "Task B", "Task C"]:
+        client.post("/todo", json={"task": task})
+
+    response = client.get("/todos?limit=2")
+
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+
+def test_todos_skip_and_limit(client):
+    for task in ["Task A", "Task B", "Task C", "Task D"]:
+        client.post("/todo", json={"task": task})
+
+    response = client.get("/todos?skip=1&limit=2")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
+    assert [todo["task"] for todo in data] == ["Task B", "Task C"]
+
+
+def test_invalid_pagination_parameters(client):
+    response = client.get("/todos?skip=-1")
+    assert response.status_code == 422
+
+    response = client.get("/todos?limit=0")
+    assert response.status_code == 422
