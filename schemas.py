@@ -1,10 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import date
 
 
 
 class TodoCreate(BaseModel):
-    task: str
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    task: str = Field(min_length=1)
     priority: int = 0
     description: str | None = None
     due_date: date | None = None

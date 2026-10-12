@@ -435,3 +435,88 @@ def test_patch_todo_clear_due_date(client):
 
     assert response.status_code == 200
     assert response.json()["due_date"] is None
+
+
+def test_create_todo_rejects_empty_task(client):
+    response = client.post("/todo", json={"task": ""})
+
+    assert response.status_code == 422
+
+
+def test_create_todo_rejects_whitespace_task(client):
+    response = client.post("/todo", json={"task": "   "})
+
+    assert response.status_code == 422
+
+
+def test_create_todo_rejects_invalid_due_date(client):
+    response = client.post(
+        "/todo",
+        json={
+            "task": "Learn FastAPI",
+            "due_date": "not-a-date",
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_create_todo_rejects_float_priority(client):
+    response = client.post(
+        "/todo",
+        json={
+            "task": "Learn FastAPI",
+            "priority": 1.5,
+        },
+    )
+
+    assert response.status_code == 422
+
+
+def test_create_todo_rejects_string_priority(client):
+    response = client.post(
+        "/todo",
+        json={
+            "task": "Learn FastAPI",
+            "priority": "high",
+        },
+    )
+
+    assert response.status_code == 422
+
+
+
+def test_patch_todo_with_empty_payload(client):
+    create_response = client.post(
+        "/todo",
+        json={"task": "Learn FastAPI", "priority": 2},
+    )
+    todo_id = create_response.json()["id"]
+
+    response = client.patch(f"/todo/{todo_id}", json={})
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["task"] == "Learn FastAPI"
+    assert data["priority"] == 2
+
+
+def test_get_todo_with_invalid_id_type(client):
+    response = client.get("/todo/abc")
+
+    assert response.status_code == 422
+
+
+def test_patch_todo_with_invalid_due_date(client):
+    create_response = client.post(
+        "/todo",
+        json={"task": "Learn FastAPI"},
+    )
+    todo_id = create_response.json()["id"]
+
+    response = client.patch(
+        f"/todo/{todo_id}",
+        json={"due_date": "not-a-date"},
+    )
+
+    assert response.status_code == 422
