@@ -367,3 +367,71 @@ def test_invalid_pagination_parameters(client):
 
     response = client.get("/todos?limit=0")
     assert response.status_code == 422
+
+
+def test_create_todo_with_description_and_due_date(client):
+    response = client.post(
+        "/todo",
+        json={
+            "task": "Learn FastAPI",
+            "description": "Finish the API tutorial",
+            "due_date": "2026-10-20",
+        },
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["description"] == "Finish the API tutorial"
+    assert data["due_date"] == "2026-10-20"
+
+
+def test_create_todo_without_optional_fields(client):
+    response = client.post(
+        "/todo",
+        json={"task": "Learn Python"},
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["description"] is None
+    assert data["due_date"] is None
+
+
+def test_patch_todo_description_and_due_date(client):
+    create_response = client.post(
+        "/todo",
+        json={"task": "Learn FastAPI"},
+    )
+    todo_id = create_response.json()["id"]
+
+    response = client.patch(
+        f"/todo/{todo_id}",
+        json={
+            "description": "Practice testing",
+            "due_date": "2026-10-22",
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["description"] == "Practice testing"
+    assert data["due_date"] == "2026-10-22"
+
+
+def test_patch_todo_clear_due_date(client):
+    create_response = client.post(
+        "/todo",
+        json={
+            "task": "Learn FastAPI",
+            "due_date": "2026-10-20",
+        },
+    )
+    todo_id = create_response.json()["id"]
+
+    response = client.patch(
+        f"/todo/{todo_id}",
+        json={"due_date": None},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["due_date"] is None
