@@ -206,3 +206,91 @@ def test_patch_todo_priority(client):
     assert response.status_code == 200
     assert response.json()["priority"] == 2
     assert response.json()["task"] == "Study migrations"
+
+
+def test_filter_todos_by_completed(client):
+    client.post("/todo", json={"task": "Task A"})
+    create_response = client.post(
+        "/todo",
+        json={"task": "Task B"},
+    )
+    todo_id = create_response.json()["id"]
+
+    client.patch(
+        f"/todo/{todo_id}",
+        json={"completed": True},
+    )
+
+    response = client.get("/todos?completed=false")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["task"] == "Task A"
+
+
+def test_filter_todos_by_priority(client):
+    client.post("/todo", json={"task": "Task A", "priority": 1})
+    client.post("/todo", json={"task": "Task B", "priority": 2})
+    client.post("/todo", json={"task": "Task C", "priority": 2})
+
+    response = client.get("/todos?priority=2")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 2
+    assert all(todo["priority"] == 2 for todo in data)
+
+
+def test_filter_todos_combined(client):
+    client.post(
+        "/todo",
+        json={"task": "Task A", "completed": False, "priority": 2},
+    )
+    create_response = client.post(
+        "/todo",
+        json={"task": "Task B"},
+    )
+    todo_id = create_response.json()["id"]
+
+    client.patch(
+        f"/todo/{todo_id}",
+        json={"completed": True},
+    )
+    client.post(
+        "/todo",
+        json={"task": "Task C", "completed": False, "priority": 1},
+    )
+
+    response = client.get("/todos?completed=false&priority=2")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data) == 1
+    assert data[0]["task"] == "Task A"
+
+
+def test_sort_todos(client):
+    client.post("/todo", json={"task": "Task A", "priority": 3})
+    client.post("/todo", json={"task": "Task B", "priority": 1})
+    client.post("/todo", json={"task": "Task C", "priority": 2})
+
+    response = client.get("/todos?sort_by=priority&order=asc")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert [todo["priority"] for todo in data] == [1, 2, 3]
+
+    response = client.get("/todos?sort_by=priority&order=desc")
+
+    assert response.status_code == 200
+    data = response.json()
+    assert [todo["priority"] for todo in data] == [3, 2, 1]
+
+
+def test_invalid_sort_parameters(client):
+    response = client.get("/todos?sort_by=name")
+    assert response.status_code == 400
+
+    response = client.get("/todos?order=invalid")
+    assert response.status_code == 400

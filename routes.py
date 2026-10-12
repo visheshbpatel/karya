@@ -9,9 +9,35 @@ router = APIRouter()
 
 
 @router.get("/todos", response_model=list[TodoReturn])
-def get_todos(db: Session = Depends(get_db)):
+def get_todos(
+    completed: bool | None = None,
+    priority: int | None = None,
+    sort_by: str = "id",
+    order: str = "asc",
+    db: Session = Depends(get_db)
+):
 
-    result = db.execute(select(Todo))
+    query = select(Todo)
+
+    if completed is not None:
+        query = query.where(Todo.completed == completed)
+
+    if priority is not None:
+        query = query.where(Todo.priority == priority)
+
+    if sort_by not in {"id", "priority"}:
+        raise HTTPException(status_code=400, detail="Invalid sort field")
+
+    if order not in {"asc", "desc"}:
+        raise HTTPException(status_code=400, detail="Invalid sort field")
+
+    sort_column = getattr(Todo, sort_by)
+
+    query = query.order_by(
+        sort_column.asc() if order == "asc" else sort_column.desc()
+    )
+
+    result = db.execute(query)
     todos = result.scalars().all()
 
     return todos
