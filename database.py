@@ -1,8 +1,8 @@
 import os
 from datetime import date
 
-from sqlalchemy import Boolean, Date, Integer, String, create_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
+from sqlalchemy import Boolean, Date, Integer, String, create_engine, ForeignKey
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker, relationship
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -31,7 +31,22 @@ class Todo(Base):
     )
     description: Mapped[str | None] = mapped_column(String, nullable=True)
     due_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
+    user: Mapped["User | None"] = relationship(back_populates="todos")
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    first_name: Mapped[str] = mapped_column(String, nullable=False)
+    last_name: Mapped[str] = mapped_column(String, nullable=False)
+    username: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(String, nullable=False)
+
+    todos: Mapped[list["Todo"]] = relationship(back_populates="user")
 
 def get_db():
     db = SessionLocal()
