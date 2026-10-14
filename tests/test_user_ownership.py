@@ -1,8 +1,13 @@
-
+import routes
 from fastapi.testclient import TestClient
 
 
-def register_and_login(client: TestClient, username: str, email: str):
+def register_and_login(
+    client: TestClient,
+    username: str,
+    email: str,
+    sent_otps: dict[str, str],
+):
     password = "secure-password-123"
 
     registration = client.post(
@@ -17,6 +22,15 @@ def register_and_login(client: TestClient, username: str, email: str):
     )
     assert registration.status_code == 201
 
+    verification = client.post(
+        "/auth/verify-email",
+        json={
+            "email": email,
+            "otp": sent_otps[email],
+        },
+    )
+    assert verification.status_code == 200
+
     login = client.post(
         "/auth/login",
         json={
@@ -29,17 +43,27 @@ def register_and_login(client: TestClient, username: str, email: str):
     return login.json()["access_token"]
 
 
-def test_users_cannot_access_each_others_todos(client: TestClient):
-    # Remove the fixture override so requests use real JWT verification.
+def test_users_cannot_access_each_others_todos(
+    client: TestClient,
+    monkeypatch,
+):
     client.app.dependency_overrides.pop(
         __import__("auth").get_current_user, None
     )
 
+    sent_otps = {}
+
+    monkeypatch.setattr(
+        routes,
+        "send_otp_email",
+        lambda email, otp: sent_otps.update({email: otp}),
+    )
+
     token_a = register_and_login(
-        client, "alice", "alice@example.com"
+    client, "alice", "alice@example.com", sent_otps
     )
     token_b = register_and_login(
-        client, "bob", "bob@example.com"
+        client, "bob", "bob@example.com", sent_otps
     )
 
     response = client.post(

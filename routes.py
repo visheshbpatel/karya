@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy import select, or_, case
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+import httpx
+from datetime import datetime, timezone
 
 from schemas import (
     TodoCreate,
@@ -12,11 +14,20 @@ from schemas import (
     UserReturn,
     LoginRequest,
     TokenResponse,
-    Priority
+    Priority,
+    EmailVerificationRequest,
+    ResendOTPRequest
 )
 from database import get_db, Todo, User
 from security import hash_password, verify_password
 from auth import create_access_token, get_current_user
+from otp_verification import verify_user_email, OTPVerificationError
+from otp_service import generate_otp
+from otp_repository import create_otp
+from email_service import send_otp_email
+from otp_resend_service import prepare_resend_otp, OTPResendError
+
+
 
 router = APIRouter()
 
@@ -186,6 +197,7 @@ def del_todo(
     db.commit()
 
 
+
 @router.post("/auth/register", response_model=UserReturn, status_code=201)
 def register_user(
     user_data: UserCreate,
@@ -197,13 +209,24 @@ def register_user(
         username=user_data.username,
         email=user_data.email,
         password_hash=hash_password(user_data.password),
+        is_verified=False,
     )
 
-    db.add(user)
-
     try:
+        db.add(user)
+        db.flush()
+
+        otp = generate_otp()
+        create_otp(db, user.id, otp)
+
+        now = datetime.now(timezone.utc)
+        user.otp_last_sent_at = now
+        user.otp_window_started_at = now
+        user.otp_request_count = 1
+
         db.commit()
         db.refresh(user)
+
     except IntegrityError:
         db.rollback()
         raise HTTPException(
@@ -211,7 +234,19 @@ def register_user(
             detail="Username or email already exists",
         )
 
+    try:
+        send_otp_email(user.email, otp)
+    except (httpx.HTTPError, RuntimeError):
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "Account created, but verification email could not be sent. "
+                "Please try requesting a new verification code."
+            ),
+        )
+
     return user
+
 
 
 @router.post("/auth/login", response_model=TokenResponse)
@@ -236,9 +271,78 @@ def login(
             detail="Invalid username/email or password",
         )
 
+    if not user.is_verified:
+        raise HTTPException(
+            status_code=403,
+            detail="Please verify your email before logging in",
+        )
+
     access_token = create_access_token(user.id)
 
     return {
         "access_token": access_token,
         "token_type": "bearer",
     }
+
+
+@router.post("/auth/verify-email")
+def verify_email(
+    data: EmailVerificationRequest,
+    db: Session = Depends(get_db),
+):
+    user = db.scalar(
+        select(User).where(User.email == data.email)
+    )
+
+    if user is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid or expired OTP",
+        )
+
+    if user.is_verified:
+        raise HTTPException(
+            status_code=400,
+            detail="Email is already verified",
+        )
+
+    try:
+        verify_user_email(db, user, data.otp)
+    except OTPVerificationError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc),
+        ) from exc
+
+    return {"message": "Email verified successfully"}
+
+
+@router.post("/auth/resend-otp")
+def resend_otp(data: ResendOTPRequest, db: Session = Depends(get_db)):
+    generic_response = {
+        "message": (
+            "If the account is eligible, "
+            "a verification email will be sent."
+        )
+    }
+
+    user = db.scalar(select(User).where(User.email == data.email))
+
+    if user is None or user.is_verified:
+        return generic_response
+
+    try:
+        otp = prepare_resend_otp(db, user.id)
+    except OTPResendError:
+        # Keep account eligibility and rate-limit state out of the response.
+        return generic_response
+
+    try:
+        send_otp_email(user.email, otp)
+    except (httpx.HTTPError, RuntimeError) as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Verification email could not be sent. Please try again later.",
+        ) from exc
+
+    return generic_response

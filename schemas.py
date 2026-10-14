@@ -74,3 +74,16 @@ class LoginRequest(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class EmailVerificationRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    email: str = Field(min_length=5, max_length=255)
+    otp: str = Field(pattern=r"^\d{6}$")
+
+
+class ResendOTPRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    email: str = Field(min_length=5, max_length=255)

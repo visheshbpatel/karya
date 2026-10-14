@@ -1,4 +1,4 @@
-
+import routes
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
@@ -7,7 +7,16 @@ from database import User, get_db
 from auth import get_current_user
 
 
-def test_register_user(client: TestClient):
+
+def test_register_user(client, monkeypatch):
+    emails_sent = []
+
+    monkeypatch.setattr(
+        routes,
+        "send_otp_email",
+        lambda email, otp: emails_sent.append((email, otp)),
+    )
+
     response = client.post(
         "/auth/register",
         json={
@@ -20,11 +29,12 @@ def test_register_user(client: TestClient):
     )
 
     assert response.status_code == 201
-    data = response.json()
-    assert data["username"] == "alice"
-    assert data["email"] == "alice@example.com"
-    assert "password" not in data
-    assert "password_hash" not in data
+    assert response.json()["email"] == "alice@example.com"
+    assert len(emails_sent) == 1
+    assert emails_sent[0][0] == "alice@example.com"
+    assert len(emails_sent[0][1]) == 6
+    assert emails_sent[0][1].isdigit()
+
 
 
 def test_login_with_username(client: TestClient):
