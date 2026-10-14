@@ -1,6 +1,5 @@
-
 from fastapi import APIRouter, HTTPException, Depends, Query
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, case
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
@@ -13,6 +12,7 @@ from schemas import (
     UserReturn,
     LoginRequest,
     TokenResponse,
+    Priority
 )
 from database import get_db, Todo, User
 from security import hash_password, verify_password
@@ -24,7 +24,7 @@ router = APIRouter()
 @router.get("/todos", response_model=list[TodoReturn])
 def get_todos(
     completed: bool | None = None,
-    priority: int | None = None,
+    priority: Priority | None = None,
     sort_by: str = "id",
     order: str = "asc",
     search: str | None = None,
@@ -50,10 +50,19 @@ def get_todos(
     if search is not None:
         query = query.where(Todo.task.ilike(f"%{search}%"))
 
-    sort_column = getattr(Todo, sort_by)
+    if sort_by == "priority":
+        sort_column = case(
+            (Todo.priority == "urgent", 1),
+            (Todo.priority == "important", 2),
+            (Todo.priority == "normal", 3),
+        )
+    else:
+        sort_column = Todo.id
+
     query = query.order_by(
         sort_column.asc() if order == "asc" else sort_column.desc()
     )
+
     query = query.offset(skip).limit(limit)
 
     return db.scalars(query).all()

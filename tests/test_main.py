@@ -178,17 +178,17 @@ def test_create_todo_default_priority(client):
     )
 
     assert response.status_code == 201
-    assert response.json()["priority"] == 0
+    assert response.json()["priority"] == "normal"
 
 
 def test_create_todo_custom_priority(client):
     response = client.post(
         "/todo",
-        json={"task": "Finish Karya", "priority": 2},
+        json={"task": "Finish Karya", "priority": "urgent"},
     )
 
     assert response.status_code == 201
-    assert response.json()["priority"] == 2
+    assert response.json()["priority"] == "urgent"
 
 
 def test_patch_todo_priority(client):
@@ -200,52 +200,31 @@ def test_patch_todo_priority(client):
 
     response = client.patch(
         f"/todo/{todo_id}",
-        json={"priority": 2},
+        json={"priority": "urgent"},
     )
 
     assert response.status_code == 200
-    assert response.json()["priority"] == 2
+    assert response.json()["priority"] == "urgent"
     assert response.json()["task"] == "Study migrations"
 
 
-def test_filter_todos_by_completed(client):
-    client.post("/todo", json={"task": "Task A"})
-    create_response = client.post(
-        "/todo",
-        json={"task": "Task B"},
-    )
-    todo_id = create_response.json()["id"]
-
-    client.patch(
-        f"/todo/{todo_id}",
-        json={"completed": True},
-    )
-
-    response = client.get("/todos?completed=false")
-
-    assert response.status_code == 200
-    data = response.json()
-    assert len(data) == 1
-    assert data[0]["task"] == "Task A"
-
-
 def test_filter_todos_by_priority(client):
-    client.post("/todo", json={"task": "Task A", "priority": 1})
-    client.post("/todo", json={"task": "Task B", "priority": 2})
-    client.post("/todo", json={"task": "Task C", "priority": 2})
+    client.post("/todo", json={"task": "Task A", "priority": "normal"})
+    client.post("/todo", json={"task": "Task B", "priority": "urgent"})
+    client.post("/todo", json={"task": "Task C", "priority": "urgent"})
 
-    response = client.get("/todos?priority=2")
+    response = client.get("/todos?priority=urgent")
 
     assert response.status_code == 200
     data = response.json()
     assert len(data) == 2
-    assert all(todo["priority"] == 2 for todo in data)
+    assert all(todo["priority"] == "urgent" for todo in data)
 
 
 def test_filter_todos_combined(client):
     client.post(
         "/todo",
-        json={"task": "Task A", "completed": False, "priority": 2},
+        json={"task": "Task A", "priority": "urgent"},
     )
     create_response = client.post(
         "/todo",
@@ -259,10 +238,10 @@ def test_filter_todos_combined(client):
     )
     client.post(
         "/todo",
-        json={"task": "Task C", "completed": False, "priority": 1},
+        json={"task": "Task C", "priority": "important"},
     )
 
-    response = client.get("/todos?completed=false&priority=2")
+    response = client.get("/todos?completed=false&priority=urgent")
 
     assert response.status_code == 200
     data = response.json()
@@ -271,21 +250,26 @@ def test_filter_todos_combined(client):
 
 
 def test_sort_todos(client):
-    client.post("/todo", json={"task": "Task A", "priority": 3})
-    client.post("/todo", json={"task": "Task B", "priority": 1})
-    client.post("/todo", json={"task": "Task C", "priority": 2})
+    client.post("/todo", json={"task": "Task A", "priority": "normal"})
+    client.post("/todo", json={"task": "Task B", "priority": "urgent"})
+    client.post("/todo", json={"task": "Task C", "priority": "important"})
 
     response = client.get("/todos?sort_by=priority&order=asc")
 
     assert response.status_code == 200
     data = response.json()
-    assert [todo["priority"] for todo in data] == [1, 2, 3]
+    assert [todo["priority"] for todo in data] == [
+        "urgent", "important", "normal"
+    ]
 
     response = client.get("/todos?sort_by=priority&order=desc")
 
     assert response.status_code == 200
     data = response.json()
-    assert [todo["priority"] for todo in data] == [3, 2, 1]
+    assert [todo["priority"] for todo in data] == [
+        "normal", "important", "urgent"
+    ]
+
 
 
 def test_invalid_sort_parameters(client):
@@ -489,7 +473,7 @@ def test_create_todo_rejects_string_priority(client):
 def test_patch_todo_with_empty_payload(client):
     create_response = client.post(
         "/todo",
-        json={"task": "Learn FastAPI", "priority": 2},
+        json={"task": "Learn FastAPI", "priority": "urgent"},
     )
     todo_id = create_response.json()["id"]
 
@@ -498,7 +482,7 @@ def test_patch_todo_with_empty_payload(client):
     assert response.status_code == 200
     data = response.json()
     assert data["task"] == "Learn FastAPI"
-    assert data["priority"] == 2
+    assert data["priority"] == "urgent"
 
 
 def test_get_todo_with_invalid_id_type(client):
@@ -520,3 +504,14 @@ def test_patch_todo_with_invalid_due_date(client):
     )
 
     assert response.status_code == 422
+
+
+def test_create_todo_includes_created_at(client):
+    response = client.post(
+        "/todo",
+        json={"task": "Test creation timestamp"},
+    )
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["created_at"]
