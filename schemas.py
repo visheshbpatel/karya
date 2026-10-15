@@ -87,3 +87,23 @@ class ResendOTPRequest(BaseModel):
     model_config = ConfigDict(str_strip_whitespace=True)
 
     email: str = Field(min_length=5, max_length=255)
+
+
+class ForgotPasswordRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    email: str = Field(min_length=5, max_length=255)
+
+
+class VerifyResetOTPRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    email: str = Field(min_length=5, max_length=255)
+    otp: str = Field(pattern=r"^\d{6}$")
+
+
+class ResetPasswordRequest(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    reset_token: str = Field(min_length=1, max_length=255)
+    new_password: str = Field(min_length=8, max_length=128)

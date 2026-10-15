@@ -63,6 +63,8 @@ class Todo(Base):
 
     user: Mapped["User | None"] = relationship(back_populates="todos")
 
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -89,6 +91,20 @@ class User(Base):
         nullable=False,
     )
     otp_window_started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    reset_last_sent_at: Mapped[datetime | None] = mapped_column(
+    DateTime(timezone=True),
+    nullable=True,
+    )
+
+    reset_request_count: Mapped[int] = mapped_column(
+        default=0,
+        nullable=False,
+    )
+
+    reset_window_started_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
     )
@@ -126,6 +142,47 @@ class EmailOTP(Base):
         server_default="0",
         nullable=False,
     )
+
+
+
+class PasswordResetOTP(Base):
+    __tablename__ = "password_reset_otps"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    otp_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+    used_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    attempts: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        server_default="0",
+        nullable=False,
+    )
+    verified_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    reset_token_hash: Mapped[str | None] = mapped_column(
+        String(255),
+        nullable=True,
+    )
+
 
 
 def get_db():
