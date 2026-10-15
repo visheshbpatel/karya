@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · Karya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+<div class="auth">
+  <aside class="auth-aside">
+    <a class="brand" href="login.html" aria-label="Karya"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".18" stroke-width="2"/><path d="M12 3a9 9 0 1 1-8.2 5.3" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/><path d="M8.5 12.3l2.5 2.5 4.5-5" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Karya</a>
+    <svg class="art" viewBox="0 0 420 420" fill="none" aria-hidden="true"><circle cx="210" cy="210" r="170" stroke="var(--line-strong)" stroke-width="1.5"/><path d="M210 40a170 170 0 1 1-147 85" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><circle cx="63" cy="125" r="6" fill="var(--accent)"/></svg>
+    <p class="cap">One thing, then the next.<small>कार्य · work, a deed done</small></p>
+  </aside>
+  <main class="auth-main">
+    <div class="auth-card">
+      <div class="auth-head">
+        <a class="brand m-brand" href="login.html">Karya</a>
+        <h1 class="t-display">Welcome back</h1>
+        <p class="muted">Sign in with your email or username.</p>
+      </div>
+      <div id="banner"></div>
+      <form id="form" novalidate>
+        <div class="field"><label class="label" for="identifier">Email or username</label><input id="identifier" class="input" type="text" autocomplete="username" maxlength="255" autofocus></div>
+        <div class="field">
+          <label class="label" for="password">Password</label>
+          <div class="input-wrap">
+            <input id="password" class="input" type="password" autocomplete="current-password" maxlength="128">
+            <button type="button" id="toggle" class="btn btn-ghost btn-icon input-end" aria-label="Show password"></button>
+          </div>
+        </div>
+        <button type="submit" id="submit" class="btn btn-primary btn-lg btn-block" style="margin-top: 8px">Sign in</button>
+      </form>
+      <p class="auth-foot">New to Karya? <a href="register.html">Create an account</a></p>
+    </div>
+  </main>
+</div>
+<script type="module" src="js/login.js"></script>
+</body>
+</html>

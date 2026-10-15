@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tasks · Karya</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/pages.css">
+</head>
+<body class="has-fab">
+<a class="skip" href="#list-area">Skip to tasks</a>
+<div class="app">
+  <header class="appbar">
+    <a class="brand" href="index.html" aria-label="Karya home"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".18" stroke-width="2"/><path d="M12 3a9 9 0 1 1-8.2 5.3" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/><path d="M8.5 12.3l2.5 2.5 4.5-5" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Karya</a>
+    <div class="acct-menu">
+      <button class="acct" id="acctBtn" aria-haspopup="menu" aria-expanded="false" aria-label="Account menu">
+        <span class="avatar"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+        <span class="acct-name" id="acctName"></span>
+        <svg class="i i-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <div class="popover" id="acctPop" role="menu" hidden>
+        <button class="menu-item" role="menuitem" id="openAccount"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Account</button>
+        <div class="menu-sep"></div>
+        <button class="menu-item" role="menuitem" id="signOut"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H5v16h4M16 8l4 4-4 4M20 12H9"/></svg>Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap" id="main">
+    <div class="page-head">
+      <div>
+        <p class="eyebrow" id="today"></p>
+        <h1 class="t-h1">Tasks</h1>
+        <p class="summary" id="summary" aria-live="polite"></p>
+      </div>
+      <button class="btn btn-primary btn-new" id="newBtn" type="button"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New task</button>
+    </div>
+
+    <div class="toolbar" role="search">
+      <div class="search">
+        <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <label class="sr-only" for="q">Search task titles</label>
+        <input id="q" class="input" type="search" placeholder="Search task titles" autocomplete="off">
+        <button class="btn btn-ghost btn-icon input-end" id="clearQ" type="button" aria-label="Clear search" hidden><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <div class="menu">
+        <button class="btn btn-secondary" id="sortBtn" type="button" aria-haspopup="menu" aria-expanded="false"><span class="faint">Sort</span> <span id="sortLabel">Newest first</span><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="popover" id="sortPop" role="menu" hidden>
+          <p class="menu-label">Created</p>
+          <button class="menu-item" role="menuitemradio" aria-checked="true" data-sort="newest">Newest first<svg class="i tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+          <button class="menu-item" role="menuitemradio" aria-checked="false" data-sort="oldest">Oldest first<svg class="i tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+          <div class="menu-sep"></div>
+          <p class="menu-label">Priority</p>
+          <button class="menu-item" role="menuitemradio" aria-checked="false" data-sort="urgent">Most urgent first<svg class="i tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+          <button class="menu-item" role="menuitemradio" aria-checked="false" data-sort="least">Least urgent first<svg class="i tick" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="filters">
+      <div class="seg" role="radiogroup" aria-label="Status" id="statusSeg">
+        <label><input type="radio" name="status" value="all" checked><span>All</span></label>
+        <label><input type="radio" name="status" value="open"><span>Open</span></label>
+        <label><input type="radio" name="status" value="done"><span>Done</span></label>
+      </div>
+      <span class="lbl" id="prio-l">Priority</span>
+      <div class="chips" role="group" aria-labelledby="prio-l" id="prioChips">
+        <button class="chip" type="button" data-prio="" aria-pressed="true">All</button>
+        <button class="chip" type="button" data-prio="urgent" aria-pressed="false"><span class="bars b3" aria-hidden="true"><i></i><i></i><i></i></span>Urgent</button>
+        <button class="chip" type="button" data-prio="important" aria-pressed="false"><span class="bars b2" aria-hidden="true"><i></i><i></i><i></i></span>Important</button>
+        <button class="chip" type="button" data-prio="normal" aria-pressed="false"><span class="bars b1" aria-hidden="true"><i></i><i></i><i></i></span>Normal</button>
+      </div>
+    </div>
+
+    <div class="list-area" id="list-area" tabindex="-1"></div>
+
+    <nav class="pager" aria-label="Pagination" id="pager" hidden>
+      <span class="num" id="range"></span>
+      <div class="btns">
+        <button class="btn btn-secondary btn-sm" id="prev" type="button"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6"/></svg>Previous</button>
+        <button class="btn btn-secondary btn-sm" id="next" type="button">Next<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6"/></svg></button>
+      </div>
+    </nav>
+  </main>
+  <button class="btn btn-primary fab" id="fab" type="button"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>New task</button>
+</div>
+<p class="sr-status" id="srStatus" role="status" aria-live="polite"></p>
+
+<!-- create / edit -->
+<dialog class="dialog" id="taskDialog" aria-labelledby="taskTitle">
+  <div class="grab"></div>
+  <div class="dialog-head"><h2 class="dialog-title" id="taskTitle">New task</h2><button class="btn btn-ghost btn-icon" type="button" id="taskClose" aria-label="Close"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+  <form class="dialog-body" id="taskForm" novalidate>
+    <div id="taskBanner"></div>
+    <div class="field"><label class="label" for="tTitle">Title</label><input id="tTitle" class="input" type="text" placeholder="What needs doing?" autocomplete="off"></div>
+    <div class="field"><label class="label" for="tDesc">Description <span class="opt">optional</span></label><textarea id="tDesc" class="textarea" placeholder="Add detail, links or context"></textarea></div>
+    <div class="field"><span class="label" id="tPrioL">Priority</span>
+      <div class="seg seg-block" role="radiogroup" aria-labelledby="tPrioL">
+        <label><input type="radio" name="priority" value="normal" checked><span><span class="bars b1" aria-hidden="true"><i></i><i></i><i></i></span>Normal</span></label>
+        <label><input type="radio" name="priority" value="important"><span><span class="bars b2" aria-hidden="true"><i></i><i></i><i></i></span>Important</span></label>
+        <label><input type="radio" name="priority" value="urgent"><span><span class="bars b3" aria-hidden="true"><i></i><i></i><i></i></span>Urgent</span></label>
+      </div></div>
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+      <div class="field" style="width: 220px; max-width: 100%"><label class="label" for="tDue">Due date <span class="opt">optional</span></label><input id="tDue" class="input num" type="date"></div>
+      <label id="tDoneWrap" style="display: flex; align-items: center; gap: 10px; min-height: 40px; font-size: 14px; cursor: pointer" hidden><span class="check"><input class="check-input" type="checkbox" id="tDone"><span class="check-box"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" pathLength="16"/></svg></span></span>Completed</label>
+    </div>
+  </form>
+  <div class="dialog-foot">
+    <button class="btn btn-danger-ghost left" type="button" id="tDelete" hidden><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Delete</button>
+    <button class="btn btn-secondary" type="button" id="tCancel">Cancel</button>
+    <button class="btn btn-primary" type="submit" id="tSave" form="taskForm">Create task</button>
+  </div>
+</dialog>
+
+<!-- delete confirmation -->
+<dialog class="dialog dialog-sm" id="delDialog" aria-labelledby="delTitle" aria-describedby="delMsg">
+  <div class="grab"></div>
+  <div class="dialog-head"><h2 class="dialog-title" id="delTitle">Delete this task?</h2></div>
+  <div class="dialog-body"><div id="delBanner"></div><p class="muted" id="delMsg"></p></div>
+  <div class="dialog-foot"><button class="btn btn-secondary" type="button" id="delCancel" autofocus>Cancel</button><button class="btn btn-danger" type="button" id="delConfirm">Delete task</button></div>
+</dialog>
+
+<!-- account -->
+<dialog class="drawer" id="acctDrawer" aria-labelledby="acTitle">
+  <div style="display: flex; flex-direction: column; width: 100%; height: 100%">
+    <div class="drawer-head">
+      <h2 class="dialog-title" id="acTitle">Account</h2>
+      <button class="btn btn-ghost btn-icon" type="button" id="acClose" aria-label="Close account panel"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="drawer-body">
+      <div style="display: flex; align-items: center; gap: 14px">
+        <span class="avatar" style="width: 52px; height: 52px"><svg class="i i-lg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
+        <div><p class="t-small faint">Signed in as</p><p class="t-h3" id="acId"></p></div>
+      </div>
+      <dl class="kv" style="margin: 0; gap: 18px">
+        <div class="kv"><dt>Session started</dt><dd class="num" id="acStart">—</dd></div>
+        <div class="kv"><dt>Session ends</dt><dd class="num" id="acEnd">—</dd></div>
+      </dl>
+      <div class="banner banner-info"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><div>Sessions last 30 minutes. When one ends, you’ll be taken to sign in again.</div></div>
+    </div>
+    <div class="drawer-foot"><button class="btn btn-secondary btn-block" type="button" id="acSignOut"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H5v16h4M16 8l4 4-4 4M20 12H9"/></svg>Sign out</button></div>
+  </div>
+</dialog>
+
+<script type="module" src="js/tasks.js"></script>
+</body>
+</html>

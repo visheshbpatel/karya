@@ -1,0 +1,43 @@
+/* Karya design system — tokens + components. Plain CSS, no build step. */
+:root{
+  --bg:#F8F7F4; --surface:#FFFFFF; --sunken:#F1EFEA; --hover:#F5F3EF;
+  --line:#E6E3DC; --line-strong:#CFCBC0; --control:#8C887C;
+  --text:#1B1A17; --text-2:#55524B; --text-3:#6F6B62;
+  --accent:#0F6E5A; --accent-hover:#0B5848; --accent-press:#094A3C;
+  --accent-soft:#E4F2ED; --accent-line:#B5D8CC; --on-accent:#FFFFFF;
+  --danger:#B3321D; --danger-hover:#962A18; --danger-soft:#FBEBE6; --danger-line:#EDC3B8;
+  --warn:#855400; --warn-soft:#FAF0D8; --warn-line:#E8D29A;
+  --inverse:#1B1A17; --on-inverse:#F8F7F4; --toast-ok:#7FD3BA; --toast-err:#F4A08C;
+  --scrim:rgba(27,26,23,.40);
+  --font:"Geist",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:20px;--sp-6:24px;--sp-8:32px;--sp-10:40px;--sp-14:56px;--sp-18:72px;
+  --r-xs:4px;--r-sm:6px;--r-md:8px;--r-lg:12px;--r-xl:16px;--r-full:999px;
+  --sh-1:0 1px 2px rgba(27,26,23,.05);
+  --sh-2:0 8px 24px rgba(27,26,23,.08),0 1px 2px rgba(27,26,23,.06);
+  --sh-3:0 24px 64px rgba(27,26,23,.16),0 2px 6px rgba(27,26,23,.06);
+  --ease:cubic-bezier(.2,.7,.2,1); --ease-in:cubic-bezier(.4,0,1,1);
+  --d1:120ms; --d2:200ms; --d3:280ms;
+}
+[data-theme="dark"]{
+  --bg:#131312; --surface:#1B1B19; --sunken:#222220; --hover:#1F1F1D;
+  --line:#2E2D2A; --line-strong:#44423D; --control:#77736A;
+  --text:#EDEBE5; --text-2:#B8B4AA; --text-3:#928E84;
+  --accent:#4CC3A5; --accent-hover:#6ED3B9; --accent-press:#8BDFCB;
+  --accent-soft:#16302A; --accent-line:#245044; --on-accent:#06251D;
+  --danger:#F08A74; --danger-hover:#F5A592; --danger-soft:#3A1D17; --danger-line:#6A3226;
+  --warn:#E8B857; --warn-soft:#33290F; --warn-line:#5E4A1A;
+  --inverse:#EDEBE5; --on-inverse:#1B1A17; --toast-ok:#0F6E5A; --toast-err:#B3321D;
+  --scrim:rgba(0,0,0,.6);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#131312; --surface:#1B1B19; --sunken:#222220; --hover:#1F1F1D;
+  --line:#2E2D2A; --line-strong:#44423D; --control:#77736A;
+  --text:#EDEBE5; --text-2:#B8B4AA; --text-3:#928E84;
+  --accent:#4CC3A5; --accent-hover:#6ED3B9; --accent-press:#8BDFCB;
+  --accent-soft:#16302A; --accent-line:#245044; --on-accent:#06251D;
+  --danger:#F08A74; --danger-hover:#F5A592; --danger-soft:#3A1D17; --danger-line:#6A3226;
+  --warn:#E8B857; --warn-soft:#33290F; --warn-line:#5E4A1A;
+  --inverse:#EDEBE5; --on-inverse:#1B1A17; --toast-ok:#0F6E5A; --toast-err:#B3321D;
+  --scrim:rgba(0,0,0,.6);
+}}

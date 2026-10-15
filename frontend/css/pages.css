@@ -1,0 +1,49 @@
+/* Page-level rules that the design canvas faked: real dialogs, toasts, skip link, etc. */
+.skip{position:absolute;left:16px;top:-48px;z-index:50;padding:10px 14px;border-radius:var(--r-md);background:var(--inverse);color:var(--on-inverse);font-weight:500;text-decoration:none}
+.skip:focus{top:12px}
+[hidden]{display:none!important}
+
+/* native <dialog> */
+dialog.dialog{padding:0;margin:auto;color:var(--text);overflow:visible;max-height:calc(100dvh - 48px)}
+dialog.dialog::backdrop,dialog.drawer::backdrop{background:var(--scrim);animation:fade var(--d2) var(--ease)}
+dialog.drawer{position:fixed;inset:0 0 0 auto;margin:0;height:100dvh;max-height:none;padding:0;color:var(--text);border:0;border-left:1px solid var(--line)}
+dialog.drawer:not([open]){display:none}
+dialog.drawer[open]{display:flex}
+@media (max-width:560px){
+  dialog.dialog{margin:auto 0 0;width:100%;max-width:none;max-height:92dvh;overflow:auto}
+  dialog.drawer{width:100%}
+}
+
+/* toasts */
+.toasts{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:30;display:grid;gap:8px;justify-items:center;width:max-content;max-width:calc(100% - 32px);pointer-events:none}
+.toast{pointer-events:auto}
+.toast span{flex:1}
+@media (max-width:560px){body.has-fab .toasts{bottom:92px}}
+
+/* floating action button is fixed on a real page */
+.fab{position:fixed}
+
+/* tasks page */
+.list-area{min-height:120px}
+.input.num{font-variant-numeric:tabular-nums}
+.sr-status{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.search .input::-webkit-search-cancel-button{display:none}
+.row-title:focus-visible{outline-offset:3px}
+.popover[hidden]{display:none}
+.menu-item .tick{margin-left:auto}
+.acct-menu{position:relative}
+.acct-menu .popover{min-width:200px}
+.row-skel .skel{min-width:0}
+.status-note{font-size:13px;color:var(--text-3)}
+
+/* auth pages */
+.auth-card form[hidden],.auth-card [hidden]{display:none!important}
+.auth-card .field{display:grid;gap:6px}
+.auth-card .banner a{font-weight:500}
+fieldset.otp-set{border:0;margin:0;padding:0;display:grid;gap:8px}
+.ok-ring{width:56px;height:56px;border-radius:50%;background:var(--accent);display:grid;place-items:center}
+.ok-ring .i{stroke:var(--on-accent);stroke-width:2.4;width:24px;height:24px}
+.auth-card .resend{display:grid;gap:12px}
+
+/* empty placeholders must not take a grid gap */
+#banner:empty,#taskBanner:empty,#delBanner:empty,#limitNote:empty,#cellErr:empty{display:none}
