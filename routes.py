@@ -346,3 +346,12 @@ def resend_otp(data: ResendOTPRequest, db: Session = Depends(get_db)):
         ) from exc
 
     return generic_response
+
+
+@router.get("/auth/me", response_model=UserReturn)
+def get_user(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    
+    return current_user
+    

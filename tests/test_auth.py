@@ -99,3 +99,67 @@ def test_login_with_email(client: TestClient):
 
     assert response.status_code == 200
     assert response.json()["access_token"]
+
+
+def test_get_current_user_profile(client):
+    app.dependency_overrides.pop(get_current_user, None)
+
+    try:
+        login_response = client.post(
+            "/auth/login",
+            json={
+                "identifier": "testuser",
+                "password": "test-password-123",
+            },
+        )
+        assert login_response.status_code == 200
+
+        token = login_response.json()["access_token"]
+
+        response = client.get(
+            "/auth/me",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+        assert response.status_code == 200
+        assert response.json() == {
+            "id": client.test_user_id,
+            "first_name": "Test",
+            "last_name": "User",
+            "username": "testuser",
+            "email": "testuser@example.com",
+        }
+        assert "password_hash" not in response.json()
+    finally:
+        app.dependency_overrides[get_current_user] = (
+            client._test_current_user_override
+        )
+
+
+def test_get_current_user_profile_without_token(client):
+    app.dependency_overrides.pop(get_current_user, None)
+
+    try:
+        response = client.get("/auth/me")
+
+        assert response.status_code == 401
+    finally:
+        app.dependency_overrides[get_current_user] = (
+            client._test_current_user_override
+        )
+
+
+def test_get_current_user_profile_with_invalid_token(client):
+    app.dependency_overrides.pop(get_current_user, None)
+
+    try:
+        response = client.get(
+            "/auth/me",
+            headers={"Authorization": "Bearer invalid-token"},
+        )
+
+        assert response.status_code == 401
+    finally:
+        app.dependency_overrides[get_current_user] = (
+            client._test_current_user_override
+        )
