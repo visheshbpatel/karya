@@ -16,7 +16,10 @@ from schemas import (
     TokenResponse,
     Priority,
     EmailVerificationRequest,
-    ResendOTPRequest
+    ResendOTPRequest,
+    ForgotPasswordRequest,
+    VerifyResetOTPRequest,
+    ResetPasswordRequest,
 )
 from database import get_db, Todo, User
 from security import hash_password, verify_password
@@ -24,8 +27,18 @@ from auth import create_access_token, get_current_user
 from otp_verification import verify_user_email, OTPVerificationError
 from otp_service import generate_otp
 from otp_repository import create_otp
-from email_service import send_otp_email
+from email_service import send_otp_email, send_password_reset_email
 from otp_resend_service import prepare_resend_otp, OTPResendError
+from password_reset_request_service import (
+    prepare_password_reset_otp,
+    PasswordResetRequestError,
+)
+from password_reset_service import (
+    verify_reset_otp,
+    reset_password,
+    PasswordResetError,
+)
+
 
 
 
@@ -354,4 +367,81 @@ def get_user(
 ) -> User:
     
     return current_user
-    
+
+
+@router.post("/auth/forgot-password")
+def forgot_password(
+    data: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    response = {
+        "message": (
+            "If an eligible account exists, "
+            "a password-reset email will be sent."
+        )
+    }
+
+    user = db.scalar(
+        select(User).where(User.email == data.email)
+    )
+
+    if user is None:
+        return response
+
+    try:
+        otp = prepare_password_reset_otp(db, user.id)
+    except PasswordResetRequestError:
+        return response
+
+    try:
+        send_password_reset_email(user.email, otp)
+    except (httpx.HTTPError, RuntimeError):
+        return response
+
+    return response
+
+
+@router.post("/auth/verify-reset-otp")
+def verify_password_reset_otp(
+    data: VerifyResetOTPRequest,
+    db: Session = Depends(get_db),
+):
+    user = db.scalar(
+        select(User).where(User.email == data.email)
+    )
+
+    if user is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid or expired OTP",
+        )
+
+    try:
+        reset_token = verify_reset_otp(db, user.id, data.otp)
+    except PasswordResetError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid or expired OTP",
+        ) from exc
+
+    return {"reset_token": reset_token}
+
+
+@router.post("/auth/reset-password")
+def reset_user_password(
+    data: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    try:
+        reset_password(
+            db,
+            data.reset_token,
+            data.new_password,
+        )
+    except PasswordResetError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid or expired reset token",
+        ) from exc
+
+    return {"message": "Password reset successfully"}
