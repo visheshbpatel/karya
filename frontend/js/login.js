@@ -1,3 +1,5 @@
+import { mountThemeSwitch } from "./theme.js";
+mountThemeSwitch(document.querySelector("[data-theme-slot]"));
 import { api, session, ApiError } from "./api.js";
 import { $, icons, busy, showBanner, toast, setFieldError, clearAllErrors, bindClearOnInput, bindPasswordToggle, errorMessage } from "./ui.js";
 
@@ -17,6 +19,7 @@ const params = new URLSearchParams(location.search);
 if (params.get("reason") === "expired") {
   showBanner(bannerEl, "info", "clock:<b>Your session ended.</b> Sign in again to pick up where you left off.");
 }
+if (params.get("reset")) toast("Password updated. Sign in with your new password.");
 if (params.get("verified")) toast("Email verified. Sign in to continue.");
 if (params.get("identifier")) idEl.value = params.get("identifier");
 history.replaceState(null, "", "login.html");

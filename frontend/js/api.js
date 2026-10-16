@@ -1,6 +1,6 @@
 import { API_BASE } from "./config.js";
 
-const K = { token: "karya.token", id: "karya.identifier", start: "karya.started" };
+const K = { token: "karya.token", id: "karya.identifier", user: "karya.user" };
 
 const store = {
   get(k) { try { return sessionStorage.getItem(k); } catch { return null; } },
@@ -18,7 +18,9 @@ function decodeClaims(token) {
 export const session = {
   get token() { return store.get(K.token); },
   get identifier() { return store.get(K.id) || ""; },
-  get startedAt() { return Number(store.get(K.start)) || null; },
+  /** Profile from GET /auth/me, cached for the tab so the header never flashes empty. */
+  get user() { try { return JSON.parse(store.get(K.user)); } catch { return null; } },
+  set user(u) { store.set(K.user, JSON.stringify(u)); },
   get expiresAt() {
     const t = this.token;
     const exp = t ? decodeClaims(t).exp : null;
@@ -32,7 +34,6 @@ export const session = {
   start(token, identifier) {
     store.set(K.token, token);
     store.set(K.id, identifier);
-    store.set(K.start, String(Date.now()));
   },
   clear() { Object.values(K).forEach((k) => store.del(k)); },
 };
@@ -105,6 +106,10 @@ export const api = {
   login: (body) => request("/auth/login", { method: "POST", body, auth: false }),
   verifyEmail: (body) => request("/auth/verify-email", { method: "POST", body, auth: false }),
   resendOtp: (email) => request("/auth/resend-otp", { method: "POST", body: { email }, auth: false }),
+  me: () => request("/auth/me"),
+  forgotPassword: (email) => request("/auth/forgot-password", { method: "POST", body: { email }, auth: false }),
+  verifyResetOtp: (email, otp) => request("/auth/verify-reset-otp", { method: "POST", body: { email, otp }, auth: false }),
+  resetPassword: (reset_token, new_password) => request("/auth/reset-password", { method: "POST", body: { reset_token, new_password }, auth: false }),
   listTodos: (params, signal) => request(`/todos?${qs(params)}`, { signal }),
   createTodo: (body) => request("/todo", { method: "POST", body }),
   patchTodo: (id, body) => request(`/todo/${id}`, { method: "PATCH", body }),

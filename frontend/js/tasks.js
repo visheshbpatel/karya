@@ -1,4 +1,5 @@
 import { api, session, endSession, ApiError } from "./api.js";
+import { THEMES, themeIcon, getTheme, setTheme } from "./theme.js";
 import {
   $, $$, esc, icons, toast, busy, showBanner, setFieldError, clearFieldError, bindClearOnInput,
   setupMenu, errorMessage,
@@ -150,11 +151,8 @@ function init() {
   const dayFmt = new Intl.DateTimeFormat("en", { weekday: "long" }).format(new Date());
   const dateFmt = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "long" }).format(new Date());
   $("#today").innerHTML = `${dayFmt}, <time datetime="${today()}">${dateFmt}</time>`;
-  $("#acctName").textContent = session.identifier;
-  $("#acId").textContent = session.identifier || "—";
-
-  const exp = session.expiresAt;
-  if (exp) setTimeout(() => endSession("expired"), Math.max(0, exp - Date.now()));
+  showUser(session.user);
+  api.me().then((u) => { session.user = u; showUser(u); }).catch(() => { /* 401 already handled; otherwise keep the cached name */ });
 
   bindToolbar();
   bindList();
@@ -399,25 +397,38 @@ async function onDelete() {
 }
 
 /* ---------- account ---------- */
+function showUser(u) {
+  const name = (u && u.username) || session.identifier || "";
+  $("#acctName").textContent = name;
+  $("#acUser").textContent = name || "—";
+  $("#acMail").textContent = (u && u.email) || "";
+}
+
+function bindTheme(menu) {
+  const host = $("#themeItems");
+  host.innerHTML = THEMES.map(([v, label]) =>
+    `<button class="menu-item" role="menuitemradio" data-v="${v}" aria-checked="false">${themeIcon(v)}${label}${icons.check.replace('class="i ', 'class="i tick ')}</button>`).join("");
+  const sync = () => $$(".menu-item", host).forEach((b) => b.setAttribute("aria-checked", String(b.dataset.v === getTheme())));
+  host.addEventListener("click", (e) => {
+    const b = e.target.closest(".menu-item");
+    if (!b) return;
+    setTheme(b.dataset.v);
+    sync();
+    menu.close();
+  });
+  document.addEventListener("karya:theme", sync);
+  sync();
+}
+
 function bindAccount() {
   const menu = setupMenu($("#acctBtn"), $("#acctPop"));
+  bindTheme(menu);
   const drawer = $("#acctDrawer");
-  let t;
-  const refresh = () => {
-    const exp = session.expiresAt;
-    $("#acStart").textContent = session.startedAt ? clock(session.startedAt) : "—";
-    if (exp) {
-      const min = Math.max(0, Math.round((exp - Date.now()) / 60e3));
-      $("#acEnd").textContent = `${clock(exp)} · in ${min} min`;
-    } else $("#acEnd").textContent = "—";
-  };
   $("#openAccount").addEventListener("click", () => {
     menu.close(false);
-    refresh();
     drawer.showModal();
-    t = setInterval(refresh, 30000);
   });
-  drawer.addEventListener("close", () => { clearInterval(t); $("#acctBtn").focus(); });
+  drawer.addEventListener("close", () => $("#acctBtn").focus());
   $("#acClose").addEventListener("click", () => drawer.close());
   drawer.addEventListener("click", (e) => { if (e.target === drawer) drawer.close(); });
   const out = () => endSession("signedout");

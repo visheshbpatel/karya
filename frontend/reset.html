@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reset password · Karya</title>
+<script src="js/theme-init.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+<div class="auth">
+  <aside class="auth-aside">
+    <a class="brand" href="login.html" aria-label="Karya"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity=".18" stroke-width="2"/><path d="M12 3a9 9 0 1 1-8.2 5.3" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round"/><path d="M8.5 12.3l2.5 2.5 4.5-5" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Karya</a>
+    <svg class="art" viewBox="0 0 420 420" fill="none" aria-hidden="true"><circle cx="210" cy="210" r="170" stroke="var(--line-strong)" stroke-width="1.5"/><path d="M210 40a170 170 0 1 1-147 85" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/><circle cx="63" cy="125" r="6" fill="var(--accent)"/></svg>
+    <p class="cap">One thing, then the next.<small>कार्य · work, a deed done</small></p>
+  </aside>
+  <main class="auth-main">
+    <div class="theme-slot" data-theme-slot></div>
+    <div class="auth-card">
+      <div class="auth-head">
+        <a class="brand m-brand" href="login.html">Karya</a>
+        <h1 class="t-display" id="title">Reset your password</h1>
+        <p class="muted" id="lede">Enter the email you signed up with and we’ll send a code.</p>
+      </div>
+      <div id="banner"></div>
+
+      <form id="emailForm" novalidate>
+        <div class="field"><label class="label" for="email">Email</label><input id="email" class="input" type="email" autocomplete="email" placeholder="you@example.com" maxlength="255" autofocus></div>
+        <button type="submit" id="emailSubmit" class="btn btn-primary btn-lg btn-block">Send code</button>
+      </form>
+
+      <form id="codeForm" novalidate hidden style="gap: 20px">
+        <fieldset class="otp-set">
+          <legend class="label" style="padding: 0; margin-bottom: 8px">Reset code</legend>
+          <div class="otp" id="otp">
+            <input class="otp-cell" inputmode="numeric" autocomplete="one-time-code" aria-label="Digit 1">
+            <input class="otp-cell" inputmode="numeric" aria-label="Digit 2">
+            <input class="otp-cell" inputmode="numeric" aria-label="Digit 3">
+            <input class="otp-cell" inputmode="numeric" aria-label="Digit 4">
+            <input class="otp-cell" inputmode="numeric" aria-label="Digit 5">
+            <input class="otp-cell" inputmode="numeric" aria-label="Digit 6">
+          </div>
+          <div id="cellErr" aria-live="assertive"></div>
+        </fieldset>
+        <button type="submit" id="primary" class="btn btn-primary btn-lg btn-block" aria-disabled="true">Continue</button>
+      </form>
+
+      <form id="pwForm" novalidate hidden>
+        <div class="field">
+          <label class="label" for="newPw">New password</label>
+          <div class="input-wrap">
+            <input id="newPw" class="input" type="password" autocomplete="new-password" maxlength="128">
+            <button type="button" id="toggle" class="btn btn-ghost btn-icon input-end" aria-label="Show password"></button>
+          </div>
+          <p class="hint">At least 8 characters.</p>
+        </div>
+        <button type="submit" id="pwSubmit" class="btn btn-primary btn-lg btn-block">Update password</button>
+      </form>
+
+      <div class="resend" id="foot" hidden>
+        <div id="limitNote"></div>
+        <p class="t-small muted" id="resendLine">Didn’t get it? <button type="button" id="resendBtn" class="link-btn">Resend code</button><span id="resendWait" hidden> in <span class="num" id="resendTime" style="color: var(--text); font-weight: 500"></span></span></p>
+        <p class="t-small muted">Wrong address? <a href="reset.html">Start over</a></p>
+        <span class="sr-only" id="timerSr" aria-live="polite"></span>
+      </div>
+
+      <p class="auth-foot" id="backFoot"><a href="login.html">Back to sign in</a></p>
+    </div>
+  </main>
+</div>
+<script type="module" src="js/reset.js"></script>
+</body>
+</html>

@@ -1,3 +1,5 @@
+import { mountThemeSwitch } from "./theme.js";
+mountThemeSwitch(document.querySelector("[data-theme-slot]"));
 import { api, ApiError } from "./api.js";
 import {
   COOLDOWN_S, MAX_TRIES, loadOtp, saveOtp, clearOtp, recordSend, cooldownLeft, limitedFor, isExpired, mmss,

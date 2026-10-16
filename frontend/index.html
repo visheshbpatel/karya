@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tasks · Karya</title>
+<script src="js/theme-init.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/tokens.css">
@@ -22,6 +23,9 @@
         <svg class="i i-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
       </button>
       <div class="popover" id="acctPop" role="menu" hidden>
+        <p class="menu-label" id="themeLbl">Theme</p>
+        <div id="themeItems" role="group" aria-labelledby="themeLbl"></div>
+        <div class="menu-sep"></div>
         <button class="menu-item" role="menuitem" id="openAccount"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Account</button>
         <div class="menu-sep"></div>
         <button class="menu-item" role="menuitem" id="signOut"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H5v16h4M16 8l4 4-4 4M20 12H9"/></svg>Sign out</button>
@@ -133,13 +137,8 @@
     <div class="drawer-body">
       <div style="display: flex; align-items: center; gap: 14px">
         <span class="avatar" style="width: 52px; height: 52px"><svg class="i i-lg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span>
-        <div><p class="t-small faint">Signed in as</p><p class="t-h3" id="acId"></p></div>
+        <div class="acct-id"><p class="acct-user" id="acUser"></p><p class="acct-mail" id="acMail"></p></div>
       </div>
-      <dl class="kv" style="margin: 0; gap: 18px">
-        <div class="kv"><dt>Session started</dt><dd class="num" id="acStart">—</dd></div>
-        <div class="kv"><dt>Session ends</dt><dd class="num" id="acEnd">—</dd></div>
-      </dl>
-      <div class="banner banner-info"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><div>Sessions last 30 minutes. When one ends, you’ll be taken to sign in again.</div></div>
     </div>
     <div class="drawer-foot"><button class="btn btn-secondary btn-block" type="button" id="acSignOut"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4H5v16h4M16 8l4 4-4 4M20 12H9"/></svg>Sign out</button></div>
   </div>

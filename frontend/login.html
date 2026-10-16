@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sign in · Karya</title>
+<script src="js/theme-init.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/tokens.css">
@@ -18,6 +19,7 @@
     <p class="cap">One thing, then the next.<small>कार्य · work, a deed done</small></p>
   </aside>
   <main class="auth-main">
+    <div class="theme-slot" data-theme-slot></div>
     <div class="auth-card">
       <div class="auth-head">
         <a class="brand m-brand" href="login.html">Karya</a>
@@ -28,7 +30,7 @@
       <form id="form" novalidate>
         <div class="field"><label class="label" for="identifier">Email or username</label><input id="identifier" class="input" type="text" autocomplete="username" maxlength="255" autofocus></div>
         <div class="field">
-          <label class="label" for="password">Password</label>
+          <div class="label-row"><label class="label" for="password">Password</label><a class="t-small" href="reset.html" id="forgot">Forgot password?</a></div>
           <div class="input-wrap">
             <input id="password" class="input" type="password" autocomplete="current-password" maxlength="128">
             <button type="button" id="toggle" class="btn btn-ghost btn-icon input-end" aria-label="Show password"></button>

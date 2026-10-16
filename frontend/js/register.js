@@ -1,3 +1,5 @@
+import { mountThemeSwitch } from "./theme.js";
+mountThemeSwitch(document.querySelector("[data-theme-slot]"));
 import { api, session, ApiError } from "./api.js";
 import { recordSend } from "./otp-store.js";
 import { $, icons, busy, showBanner, setFieldError, clearAllErrors, bindClearOnInput, bindPasswordToggle, errorMessage } from "./ui.js";
