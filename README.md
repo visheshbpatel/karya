@@ -1,156 +1,189 @@
 # Karya
 
-Karya is a task management REST API built with FastAPI. It provides user authentication, email verification, and user-specific task management with support for priorities, descriptions, and due dates.
+**Karya** (कार्य, "work, a deed done") is a task manager with a FastAPI backend and a plain HTML/CSS/JavaScript frontend. It covers accounts, email verification, password reset and per-user tasks with priorities, descriptions and due dates.
 
-The project focuses on learning and implementing practical backend engineering concepts, including database design, authentication, API validation, automated testing, and database migrations.
+**Live demo:** https://karya-9bym.onrender.com/
+
+> The demo runs on a free Render instance, so the first request after a period of inactivity can take up to a minute while it wakes up.
+
+The project started as a way to learn practical backend engineering (database design, authentication, validation, migrations and testing). The longer-term goal is to turn it into an AI task agent that can be controlled from chat apps. See the [Roadmap](#roadmap).
 
 ## Features
 
-### Task Management
-- Create, retrieve, update, and delete tasks
-- Mark tasks as completed
-- Assign task priorities: `urgent`, `important`, and `normal`
-- Add task descriptions and due dates
-- Partially update task fields
-- Filter tasks by completion status and priority
-- Search tasks by name
-- Sort and paginate task results
+### Tasks
+- Create, read, update and delete tasks
+- Priorities: `urgent`, `important`, `normal`
+- Optional description and due date
+- Mark tasks done, and partially update any field with `PATCH`
+- Filter by status and priority, search by title
+- Sort by newest, oldest or priority, with pagination
+- Every task belongs to one user; users can only see and change their own
 
-### Authentication
-- User registration and login
-- Email verification using OTPs
-- OTP expiration and attempt limits
-- Resend cooldown and rate limiting
-- Password hashing
-- JWT-based authentication
-- User-specific task access
+### Accounts and security
+- Registration and login with email **or** username
+- Email verification with a six-digit OTP (10-minute expiry, 5 attempts, 60-second resend cooldown, 5 sends per hour)
+- **Password reset**: request a code, verify it, then set a new password with a short-lived reset token
+- `GET /auth/me` returns the signed-in user's profile
+- Argon2 password hashing and JWT access tokens (30 minutes, no refresh token)
+- Reset and resend endpoints give the same reply whether or not an account exists
 
-### Database and Testing
-- SQLAlchemy ORM
-- Database schema migrations with Alembic
-- SQLite support and PostgreSQL configuration
-- Automated tests using pytest
+### Frontend
+- Plain HTML, CSS and ES modules. No framework and no build step
+- Sign in, register, verify, reset password and tasks pages
+- Light, dark and system themes, saved in the browser
+- Account panel with username and email
+- Responsive layout, keyboard shortcuts (`/` search, `N` new task) and accessible dialogs and menus
+- Served by FastAPI from the same origin, so no CORS setup is needed
 
-## Tech Stack
+### Engineering
+- SQLAlchemy ORM with Alembic migrations
+- SQLite for local development, PostgreSQL in production
+- Automated tests with pytest
 
-- **Language:** Python 3.12
-- **API Framework:** FastAPI
-- **Database:** SQLite / PostgreSQL
-- **ORM:** SQLAlchemy
-- **Migrations:** Alembic
-- **Validation:** Pydantic
-- **Authentication:** JWT and Argon2 password hashing
-- **Email:** Brevo Transactional Email API
-- **Testing:** pytest
+## Tech stack
 
-## Getting Started
+| Area | Tools |
+|---|---|
+| Language | Python 3.12 |
+| API | FastAPI, Pydantic |
+| Database | SQLAlchemy, Alembic, SQLite / PostgreSQL |
+| Auth | PyJWT, Argon2 (pwdlib) |
+| Email | Brevo transactional email API |
+| Frontend | HTML5, CSS3, vanilla JavaScript |
+| Tests | pytest |
+| Hosting | Render |
+
+## Project structure
+
+```
+karya/
+├── main.py                          app setup; mounts the frontend at /app
+├── routes.py                        all API routes
+├── schemas.py                       request and response models
+├── database.py                      SQLAlchemy models and engine
+├── auth.py, security.py             JWT and password hashing
+├── otp_*.py, email_service.py       verification codes and email delivery
+├── password_reset_*.py              password-reset flow
+├── migrations/                      Alembic migrations
+├── tests/                           pytest suite
+└── frontend/
+    ├── index.html                   tasks
+    ├── login.html, register.html,
+    │   verify.html, reset.html      account pages
+    ├── css/                         tokens, components, page rules
+    └── js/                          api client, pages, theme, OTP helpers
+```
+
+## Getting started
 
 ### Prerequisites
 
 - Python 3.12
 - [uv](https://docs.astral.sh/uv/)
-- A database supported by the project
-- A Brevo account configured for transactional email
+- A [Brevo](https://www.brevo.com/) account with a verified sender (needed to send OTP emails)
 
-### 1. Clone the repository
+### 1. Clone and install
 
 ```bash
 git clone https://github.com/visheshbpatel/karya.git
 cd karya
-```
-
-### 2. Install dependencies
-
-```bash
 uv sync
 ```
 
-### 3. Configure environment variables
+### 2. Configure environment variables
 
-Create a `.env` file in the project root.
+Create a `.env` file in the project root:
 
 ```dotenv
-DATABASE_URL=your_database_connection_url
-SECRET_KEY=your_secret_key
+DATABASE_URL=sqlite:///./karya.db
+SECRET_KEY=replace_with_a_long_random_string
 
 BREVO_API_KEY=your_brevo_api_key
 BREVO_SENDER_EMAIL=your_verified_sender_email
 BREVO_SENDER_NAME=Karya
 ```
 
-Use a strong, randomly generated `SECRET_KEY`. Configure `DATABASE_URL` for your database; the application defaults to a local SQLite database when it is not provided.
+| Variable | Required | Notes |
+|---|---|---|
+| `SECRET_KEY` | Yes | Signs JWTs. Use a long random value, for example `python -c "import secrets; print(secrets.token_urlsafe(48))"` |
+| `DATABASE_URL` | No | Defaults to `sqlite:///./karya.db`. Use a PostgreSQL URL in production |
+| `BREVO_API_KEY` | For email | Without it, registration and reset emails cannot be sent |
+| `BREVO_SENDER_EMAIL` | For email | Must be verified in Brevo |
+| `BREVO_SENDER_NAME` | No | Defaults to `Karya` |
 
-Replace the Brevo placeholders with your actual credentials. The sender email must be verified in Brevo.
+Never commit `.env`.
 
-**Never commit your `.env` file or expose credentials in your repository.**
-
-### 4. Apply database migrations
+### 3. Run migrations
 
 ```bash
 uv run alembic upgrade head
 ```
 
-### 5. Start the development server
+### 4. Start the server
 
 ```bash
 uv run uvicorn main:app --reload
 ```
 
-The API will be available at:
+| What | URL |
+|---|---|
+| App | http://127.0.0.1:8000/ (redirects to `/app`) |
+| API docs (Swagger) | http://127.0.0.1:8000/docs |
 
-- API base URL: `http://127.0.0.1:8000`
-- Interactive API documentation: `http://127.0.0.1:8000/docs`
-
-## API Endpoints
+## API reference
 
 ### Authentication
 
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/auth/register` | Register a new user |
-| POST | `/auth/verify-email` | Verify email using OTP |
-| POST | `/auth/resend-otp` | Request another verification OTP |
-| POST | `/auth/login` | Authenticate and receive a JWT |
+| POST | `/auth/register` | Create an account and send a verification code |
+| POST | `/auth/verify-email` | Verify the email with the OTP |
+| POST | `/auth/resend-otp` | Send another verification code |
+| POST | `/auth/login` | Sign in with email or username; returns a JWT |
+| GET | `/auth/me` | Current user profile (requires a token) |
+| POST | `/auth/forgot-password` | Send a password-reset code |
+| POST | `/auth/verify-reset-otp` | Check the reset code; returns a `reset_token` |
+| POST | `/auth/reset-password` | Set a new password using the `reset_token` |
 
 ### Tasks
 
+All task endpoints require `Authorization: Bearer <access_token>`.
+
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/todos` | List the authenticated user's tasks |
-| GET | `/todo/{todo_id}` | Retrieve a task |
+| GET | `/todos` | List your tasks |
+| GET | `/todo/{id}` | Get one task |
 | POST | `/todo` | Create a task |
-| PUT | `/todo/{todo_id}` | Update a task |
-| PATCH | `/todo/{todo_id}` | Partially update a task |
-| DELETE | `/todo/{todo_id}` | Delete a task |
+| PUT | `/todo/{id}` | Replace a task (all fields required) |
+| PATCH | `/todo/{id}` | Update only the fields you send |
+| DELETE | `/todo/{id}` | Delete a task |
 
-Protected task endpoints require a valid JWT in the `Authorization` header:
+`GET /todos` query parameters: `completed`, `priority`, `search`, `sort_by` (`id` or `priority`), `order` (`asc` or `desc`), `skip`, `limit`. It returns a plain array without a total count.
 
-```http
-Authorization: Bearer YOUR_ACCESS_TOKEN
-```
+Try everything interactively at `/docs`.
 
-Use `/docs` to inspect request schemas and try the endpoints interactively.
-
-## Running Tests
-
-Run the automated test suite:
+## Tests
 
 ```bash
 uv run pytest -q
+uv run alembic check      # models and migrations are in sync
 ```
 
-Check whether the database models and migrations are synchronized:
+Tests need `SECRET_KEY` to be set (for example in `.env`).
 
-```bash
-uv run alembic check
-```
+## Deployment notes
 
-## Project Status
+The live demo runs on Render. For a similar setup:
 
-Karya is under active development. The current version focuses on the backend API, authentication, email verification, database integration, and automated testing.
+- Build command: `uv sync`
+- Start command: `uv run uvicorn main:app --host 0.0.0.0 --port $PORT`
+- Set the environment variables above, with a PostgreSQL `DATABASE_URL`.
 
-A frontend and further improvements are planned for future development.
+The frontend is served by the same app, so one service is enough.
 
-## License
+## Known limitations
 
-No license has been specified yet.
+- Access tokens last 30 minutes and cannot be refreshed; users sign in again afterwards.
+- Existing tokens stay valid after a password reset.
+- `/todos` returns no total count, so the UI offers Previous and Next only.
+- Resend cooldowns and hourly limits for codes are enforced by the server, and mirrored in the browser for display.
